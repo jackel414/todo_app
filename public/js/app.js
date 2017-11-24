@@ -46065,35 +46065,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
         return {
-            weeklyTasks: [{
-                marker: '1',
-                name: "Work on Site",
-                recurring: false,
-                done: false
-            }, {
-                marker: '2',
-                name: "Call Docter",
-                recurring: false,
-                done: true
-            }, {
-                marker: '3',
-                name: "Call Dentist",
-                recurring: false,
-                done: false
-            }],
+            weeklyTasks: [],
             currentTasks: [],
-            todaysTasks: [{
-                marker: '1',
-                name: "Work on Site",
-                recurring: false,
-                done: false
-            }],
-            yesterdaysTasks: [{
-                marker: '2',
-                name: "Call Docter",
-                recurring: false,
-                done: true
-            }],
+            todaysTasks: [],
+            yesterdaysTasks: [],
             date: new Date()
         };
     },
@@ -46104,27 +46079,57 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         }
     },
     created: function created() {
-        this.currentTasks = this.todaysTasks;
+        var _this = this;
+
         this.currentDay = __WEBPACK_IMPORTED_MODULE_0_moment___default()(new Date()).format('dddd, MMMM Do');
+        this.currentDate = __WEBPACK_IMPORTED_MODULE_0_moment___default()(new Date()).format('YYYY-MM-DD');
+        this.startOfWeek = __WEBPACK_IMPORTED_MODULE_0_moment___default()(new Date()).startOf('week').add(1, 'days').format('MMMM Do');
+        axios.get('/tasks').then(function (_ref) {
+            var data = _ref.data;
+            return _this.setTasks(data);
+        });
     },
 
     methods: {
+        setTasks: function setTasks(tasks) {
+            this.weeklyTasks = tasks;
+            var currentDate = this.currentDate;
+            this.todaysTasks = tasks.filter(function (task) {
+                return task.day == currentDate;
+            });
+            this.currentTasks = this.todaysTasks;
+        },
         addTask: function addTask(task) {
             var newTask = {
-                name: task
+                name: task,
+                marker: '1',
+                recurring: false,
+                complete: false
             };
 
-            this.tasks.push(newTask);
+            this.weeklyTasks.push(newTask);
+
+            axios.post('/tasks', newTask).then(function (response) {
+                console.log(response);
+            });
         },
         addTaskToToday: function addTaskToToday(task) {
             this.todaysTasks.push(task);
-        },
-        weekStart: function weekStart() {
-            return __WEBPACK_IMPORTED_MODULE_0_moment___default()(new Date()).startOf('week').add(1, 'days').format('MMMM Do');
+
+            axios.post('/tasks/' + task.id + '/do-today', []).then(function (response) {
+                console.log(response);
+            });
         },
         showYesterdayTasks: function showYesterdayTasks() {
             this.currentTasks = this.yesterdaysTasks;
             this.currentDay = __WEBPACK_IMPORTED_MODULE_0_moment___default()(new Date()).subtract(1, 'days').format('dddd, MMMM Do');
+        },
+        markComplete: function markComplete(task) {
+            task.complete = true;
+
+            axios.post('/tasks/' + task.id + '/complete', []).then(function (response) {
+                console.log(response);
+            });
         }
     }
 });
@@ -46412,7 +46417,7 @@ var render = function() {
               },
               [_vm._v("yesterday")]
             ),
-            _vm._v(" " + _vm._s(_vm.currentDay))
+            _vm._v(" " + _vm._s(_vm.currentDate))
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "card-body" }, [
@@ -46440,9 +46445,19 @@ var render = function() {
                         [_vm._v(_vm._s(task.marker))]
                       ),
                       _vm._v(" "),
-                      _c("span", { class: { completed: task.done } }, [
+                      _c("span", { class: { completed: task.complete } }, [
                         _vm._v(_vm._s(task.name))
-                      ])
+                      ]),
+                      _vm._v(" "),
+                      _c("i", {
+                        staticClass: "fa fa-check",
+                        attrs: { "aria-hidden": "true" },
+                        on: {
+                          click: function($event) {
+                            _vm.markComplete(task)
+                          }
+                        }
+                      })
                     ]
                   )
                 })
@@ -46455,7 +46470,7 @@ var render = function() {
       _c("div", { staticClass: "col" }, [
         _c("div", { staticClass: "card" }, [
           _c("div", { staticClass: "card-header" }, [
-            _vm._v("Weekly Ledger - Week of " + _vm._s(_vm.weekStart()))
+            _vm._v("Weekly Ledger - Week of " + _vm._s(_vm.startOfWeek))
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "card-body" }, [
@@ -46499,7 +46514,7 @@ var render = function() {
                       [_vm._v(_vm._s(task.marker))]
                     ),
                     _vm._v(" "),
-                    _c("span", { class: { completed: task.done } }, [
+                    _c("span", { class: { completed: task.complete } }, [
                       _vm._v(_vm._s(task.name))
                     ]),
                     _vm._v(" "),
