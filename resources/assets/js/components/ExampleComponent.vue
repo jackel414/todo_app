@@ -78,8 +78,9 @@
 
                 this.weeklyTasks.push(newTask);
 
-                axios.post('/tasks', newTask).then(function(response) {
-                    console.log(response);
+                axios.post('/tasks', newTask).then((response) => {
+                    let postion = this.weeklyTasks.length - 1;
+                    this.weeklyTasks[postion].id = response.data.task.id;
                 });
             },
             addTaskToToday(task) {

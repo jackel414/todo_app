@@ -38,7 +38,7 @@ Route::post('/tasks', function(Request $request) {
 
 	$task->save();
 
-	return response()->json(['status' => 'success'], 201);
+	return response()->json(['status' => 'success', 'task' => $task], 201);
 });
 
 Route::post('/tasks/{task}/do-today', function(Task $task) {

@@ -46100,6 +46100,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.currentTasks = this.todaysTasks;
         },
         addTask: function addTask(task) {
+            var _this2 = this;
+
             var newTask = {
                 name: task,
                 marker: '1',
@@ -46110,7 +46112,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.weeklyTasks.push(newTask);
 
             axios.post('/tasks', newTask).then(function (response) {
-                console.log(response);
+                var postion = _this2.weeklyTasks.length - 1;
+                _this2.weeklyTasks[postion].id = response.data.task.id;
             });
         },
         addTaskToToday: function addTaskToToday(task) {
