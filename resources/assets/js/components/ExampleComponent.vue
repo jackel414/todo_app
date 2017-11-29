@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col">
                 <div class="card">
-                    <div class="card-header text-center"><small class="pull-left" v-on:click="showYesterdayTasks()">yesterday</small> {{ currentDate }}</div>
+                    <div class="card-header text-center"><small class="pull-left" v-on:click="showYesterdayTasks()">yesterday</small> {{ currentDay }}</div>
 
                     <div class="card-body">
                         <div class="row">

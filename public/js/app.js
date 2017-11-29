@@ -46420,7 +46420,7 @@ var render = function() {
               },
               [_vm._v("yesterday")]
             ),
-            _vm._v(" " + _vm._s(_vm.currentDate))
+            _vm._v(" " + _vm._s(_vm.currentDay))
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "card-body" }, [
