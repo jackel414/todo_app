@@ -21,11 +21,14 @@
                     <div class="card-header">Weekly Ledger - Week of {{ startOfWeek }}</div>
 
                     <div class="card-body">
-                        <input v-on:change="addTask($event.target.value)" type="text" class="form-control" placeholder="New task..." aria-label="New task...">
+                        <input v-on:keyup.13="addTask(newTask)" v-model="newTask" type="text" class="form-control" placeholder="New task..." aria-label="New task...">
                         <br />
                         <ul class="list-group">
                             <li v-show="weeklyTasks" v-for="task in weeklyTasks" class="list-group-item">
-                                <span class="badge badge-pill badge-primary">{{ task.marker }}</span> <span v-bind:class="{ completed: task.complete }">{{ task.name }}</span> <i v-on:click="addTaskToToday(task)" class="fa fa-arrow-right" aria-hidden="true"></i>
+                                <span class="badge badge-pill badge-primary">{{ task.marker }}</span>&nbsp;
+                                <span v-bind:class="{ completed: task.complete }">{{ task.name }}</span>&nbsp;
+                                <i v-on:click="addTaskToToday(task)" class="fa fa-arrow-right" aria-hidden="true"></i>&nbsp;&nbsp;
+                                <i v-on:click="deleteTask(task)" class="fa fa-times" aria-hidden="true"></i>
                             </li>
                         </ul>
                     </div>
@@ -45,7 +48,8 @@
                 currentTasks: [],
                 todaysTasks: [],
                 yesterdaysTasks: [],
-                date: new Date()
+                date: new Date(),
+                newTask: '',
             }
         },
         filters: {
@@ -57,9 +61,12 @@
             this.currentDay = moment(new Date()).format('dddd, MMMM Do');
             this.currentDate = moment(new Date()).format('YYYY-MM-DD');
             this.startOfWeek = moment(new Date()).startOf('week').add(1, 'days').format('MMMM Do');
-            axios.get('/tasks').then(({data}) => this.setTasks(data));
+            this.getTasks();
         },
         methods: {
+            getTasks() {
+                axios.get('/tasks').then(({data}) => this.setTasks(data));
+            },
             setTasks(tasks) {
                 this.weeklyTasks = tasks;
                 let currentDate = this.currentDate;
@@ -69,6 +76,11 @@
                 this.currentTasks = this.todaysTasks;
             },
             addTask(task) {
+                if (task.length < 1) {
+                    alert("Please enter task name");
+                    return false;
+                }
+
                 var newTask = {
                     name: task,
                     marker: '1',
@@ -77,6 +89,8 @@
                 }
 
                 this.weeklyTasks.push(newTask);
+
+                this.newTask = '';
 
                 axios.post('/tasks', newTask).then((response) => {
                     let postion = this.weeklyTasks.length - 1;
@@ -99,6 +113,11 @@
 
                 axios.post('/tasks/' + task.id + '/complete', []).then(function(response) {
                     console.log(response);
+                });
+            },
+            deleteTask(task) {
+                axios.delete('/tasks/' + task.id).then((response) => {
+                    this.getTasks();
                 });
             }
         }
