@@ -46059,6 +46059,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
 
 
 
@@ -46069,7 +46072,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             currentTasks: [],
             todaysTasks: [],
             yesterdaysTasks: [],
-            date: new Date()
+            date: new Date(),
+            newTask: ''
         };
     },
 
@@ -46079,18 +46083,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         }
     },
     created: function created() {
-        var _this = this;
-
         this.currentDay = __WEBPACK_IMPORTED_MODULE_0_moment___default()(new Date()).format('dddd, MMMM Do');
         this.currentDate = __WEBPACK_IMPORTED_MODULE_0_moment___default()(new Date()).format('YYYY-MM-DD');
         this.startOfWeek = __WEBPACK_IMPORTED_MODULE_0_moment___default()(new Date()).startOf('week').add(1, 'days').format('MMMM Do');
-        axios.get('/tasks').then(function (_ref) {
-            var data = _ref.data;
-            return _this.setTasks(data);
-        });
+        this.getTasks();
     },
 
     methods: {
+        getTasks: function getTasks() {
+            var _this = this;
+
+            axios.get('/tasks').then(function (_ref) {
+                var data = _ref.data;
+                return _this.setTasks(data);
+            });
+        },
         setTasks: function setTasks(tasks) {
             this.weeklyTasks = tasks;
             var currentDate = this.currentDate;
@@ -46102,6 +46109,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         addTask: function addTask(task) {
             var _this2 = this;
 
+            if (task.length < 1) {
+                alert("Please enter task name");
+                return false;
+            }
+
             var newTask = {
                 name: task,
                 marker: '1',
@@ -46110,6 +46122,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             };
 
             this.weeklyTasks.push(newTask);
+
+            this.newTask = '';
 
             axios.post('/tasks', newTask).then(function (response) {
                 var postion = _this2.weeklyTasks.length - 1;
@@ -46132,6 +46146,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
             axios.post('/tasks/' + task.id + '/complete', []).then(function (response) {
                 console.log(response);
+            });
+        },
+        deleteTask: function deleteTask(task) {
+            var _this3 = this;
+
+            axios.delete('/tasks/' + task.id).then(function (response) {
+                _this3.getTasks();
             });
         }
     }
@@ -46478,15 +46499,33 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "card-body" }, [
             _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.newTask,
+                  expression: "newTask"
+                }
+              ],
               staticClass: "form-control",
               attrs: {
                 type: "text",
                 placeholder: "New task...",
                 "aria-label": "New task..."
               },
+              domProps: { value: _vm.newTask },
               on: {
-                change: function($event) {
-                  _vm.addTask($event.target.value)
+                keyup: function($event) {
+                  if (!("button" in $event) && $event.keyCode !== 13) {
+                    return null
+                  }
+                  _vm.addTask(_vm.newTask)
+                },
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.newTask = $event.target.value
                 }
               }
             }),
@@ -46516,17 +46555,27 @@ var render = function() {
                       { staticClass: "badge badge-pill badge-primary" },
                       [_vm._v(_vm._s(task.marker))]
                     ),
-                    _vm._v(" "),
+                    _vm._v(" \n                            "),
                     _c("span", { class: { completed: task.complete } }, [
                       _vm._v(_vm._s(task.name))
                     ]),
-                    _vm._v(" "),
+                    _vm._v(" \n                            "),
                     _c("i", {
                       staticClass: "fa fa-arrow-right",
                       attrs: { "aria-hidden": "true" },
                       on: {
                         click: function($event) {
                           _vm.addTaskToToday(task)
+                        }
+                      }
+                    }),
+                    _vm._v("  \n                            "),
+                    _c("i", {
+                      staticClass: "fa fa-times",
+                      attrs: { "aria-hidden": "true" },
+                      on: {
+                        click: function($event) {
+                          _vm.deleteTask(task)
                         }
                       }
                     })

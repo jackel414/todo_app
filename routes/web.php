@@ -28,6 +28,10 @@ Route::get('/tasks', function() {
 });
 
 Route::post('/tasks', function(Request $request) {
+    $request->validate([
+        'name' => 'required',
+    ]);
+
 	$task = new Task;
 
 	$task->fill($request->all());
@@ -57,4 +61,10 @@ Route::post('/tasks/{task}/complete', function(Task $task) {
 	$task->save();
 
 	return response()->json(['status' => 'Task successfully marked complete.'], 200);
+});
+
+Route::delete('/tasks/{task}', function(Task $task) {
+	$task->delete();
+
+	return response()->json(['status', 'Task successfully detele.'], 204);
 });
